@@ -53,6 +53,35 @@ head(butterfly$genet)
 ## Models without considering site correlation
 ### Bayesian regression
 
+```{r engine='stan',engine.opts=list(x = "mod")}
+data {
+int N; //number of observations
+//int N2; //the size of the new_X matrix
+int K;  //the number of columns in the model
+real y[N]; //the response
+matrix[N,K] X; //the model matrix
+//matrix[N2,K] new_X; //the matrix for the predicted values
+}
+
+parameters {
+vector[K] beta; //regression parameters
+real<lower=0> sigma; // the standard deviation
+}
+
+transformed parameters {
+vector[N] linpred;
+linpred = X*beta;
+}
+
+model {
+beta ~ normal(0, 10000);
+
+y ~ normal(linpred, sigma);
+}
+
+
+```
+
 To be filled.
 
 
