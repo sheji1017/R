@@ -1,0 +1,109 @@
+---
+title: "Group work 2, ST 559"
+author: "Dustin Gannon and Ji She"
+date: "June 1, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(rmarkdown)
+require(rstan) 
+require(bayesplot) 
+require(Hmisc) 
+require(reshape2)
+require(ade4)
+```
+
+## Introduction
+
+Background knowledge to be filled by Dusty.
+
+
+McKechnie, S.W., Ehrlich, P.R. and White, R.R. (1975) Population genetics of Euphydryas butterflies. I. Genetic variation and the neutrality hypothesis. Genetics, 81, 571-594.
+
+
+## Site map
+
+
+![California map showing samples](C:/Users/shej/Desktop/OSU courses/ST559/Group work/GW2/Cal_map.png)
+
+
+
+```{r, include=FALSE}
+require(ade4)
+data("butterfly")
+ind.var = butterfly$envir
+het <- c(0.64, 0.80, 0.75, 0.68, 0.65, 0.70, 0.63, 0.76, 
+         0.82, 0.35, 0.74, 0.50, 0.75, 0.84, 0.26, 0.12)
+temp_range <- ind.var$Temp_Max - ind.var$Temp_Min
+gene.df <- data.frame(cbind(het, ind.var[ ,c("Altitude")], temp_range))
+colnames(gene.df) <- c("het", "altitude", "temp_range")
+rownames(gene.df) <- rownames(ind.var)
+```
+
+
+```{r gene, comment = ""}
+require(ade4)
+data("butterfly")
+head(gene.df)
+head(butterfly$genet)
+```
+
+## Models without considering site correlation
+### Bayesian regression
+
+To be filled.
+
+
+
+
+
+### Classical regression
+```{r lm, comment = ""}
+mod.1 <- lm(het ~ altitude + temp_range, data=gene.df)
+mod.2 <- lm(het ~ altitude*temp_range, data=gene.df)
+summary(mod.1)
+summary(mod.2)
+#confint(mod.1)
+```
+
+
+## Models considering site correlation
+```{r dist, comment = ""}
+head(butterfly$xy)    # xy coordinates of each site
+# generate the distance matrix
+dist.matrix <- as.matrix(dist(butterfly$xy, method = "euclidean",
+                              diag = FALSE, upper = TRUE, p = 2))
+head(dist.matrix)
+gene.df$n.het <- 0   # placeholder for the het value of the closest site
+for(i in 1:nrow(gene.df)){
+        # find the index of the closest site
+        index <- match(sort(dist.matrix[i,],partial=2)[2], dist.matrix[i,])
+        # use the index to add the het value ot n.het
+        gene.df[i,4] <- gene.df[index,1]    
+}
+```
+
+
+
+
+
+### Bayesian regression
+
+
+
+
+### Classical regression
+```{r dist model, comment = ""}
+mod.3 <- lm(het ~ altitude + temp_range + n.het, data=gene.df)
+mod.4 <- lm(het ~ altitude*temp_range + n.het, data=gene.df)
+summary(mod.3)
+summary(mod.4)
+```
+
+
+
+
+
+
